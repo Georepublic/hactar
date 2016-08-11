@@ -27,6 +27,7 @@ Options
  -e FILE		specify (optional) rsync excludes filename
  -d			dry run
  -v			increase verbosity
+ -a			archive (keeps owner and group)
  -h			show this message
  -V			show version number
 
@@ -37,6 +38,9 @@ EOM
 }
 
 parse_commandline_arguments() {
+	# DEFAULTS
+	PERMISSIONS="-rlptD"
+	
 	while [[ ${1:0:1} = "-" ]] ; do
 		local n=1
 		local l=${#1}
@@ -81,6 +85,8 @@ parse_commandline_arguments() {
 					;;
 				d)	DRYRUN="--dry-run"
 					;;
+				a)	PERMISSIONS="--archive"
+					;;
 				*)
 					printf "Error: Unknown option %s\n" "${1}" >&2
 					exit 4
@@ -119,7 +125,7 @@ run_backup() {
 	fi
 
 	# Run rsync with passed parameters
-	rsync --archive --one-file-system --hard-links --human-readable \
+	rsync ${PERMISSIONS} --one-file-system --hard-links --human-readable \
 		--inplace --numeric-ids --delete --delete-excluded --exclude-from=${EXCLUDE} \
 		${linkdest} ${SOURCE} ${TARGET}/`date -I` ${DRYRUN} ${VERBOSE}
 }
